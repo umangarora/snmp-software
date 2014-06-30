@@ -114,6 +114,67 @@ bool Executor::std(const args_container &args, outputType type, string & respons
 For Harkirat - duration function
 ************************************************
 */
+
+bool duration(pqxx::result res,vector<struct duration_container>& durationRecords) 
+{
+	pqxx::result::const_iterator cur_it = res.begin(), prev_it = cur_it;
+	int cur_traptype;
+	//vector<struct duration_container> durationRecords;
+	if( cur_it!=res.end() ) {
+		createNew(durationRecords, cur_it);
+		cur_it++;
+	}
+
+	while(cur_it != res.end()){
+		cur_traptype = cur_it[4].as<int>();
+		if( cur_traptype ==1 ){
+			if( prev_it[0].as<int>() == cur_it[0].as<int>() ){
+				if(!durationRecords.back().deauthFlag){
+					durationRecords.back().to = cur_it[2].as<string>();
+				}
+				if(durationRecords.back().deauthFlag) {
+					createNew(durationRecords, cur_it);
+				}
+			}
+			else{
+				if(!durationRecords.back().deauthFlag){
+					durationRecords.back().to = cur_it[2].as<string>();
+					createNew(durationRecords, cur_it);
+				}
+				if(durationRecords.back().deauthFlag){
+					createNew(durationRecords, cur_it);
+				}
+			}
+		}
+		else if( cur_traptype ==2 ){
+			if( prev_it[0].as<int>() == cur_it[0].as<int>() ){
+				if(!durationRecords.back().deauthFlag){
+					durationRecords.back().to =  cur_it[2].as<string>();			
+					durationRecords.back().deauthFlag =  true;
+				}
+			}
+			else{
+				for(vector<struct duration_container>::reverse_iterator i = durationRecords.rbegin(); 
+				i != durationRecords.rend(); ++i)
+				{
+					struct duration_container ele = *i;
+					if( ele.device_id==cur_it[0].as<int>() ){
+						if(!durationRecords.back().deauthFlag){
+							ele.to = cur_it[2].as<int>();
+							ele.deauthFlag = true;
+						}
+					}
+				}
+			}
+		}
+	cur_it++;
+	prev_it++;
+
+	} //while ends
+	return true;
+}
+
+
 bool format_entries(pqxx::result & res, std::string & response){
   bool ret=false;
   return ret;

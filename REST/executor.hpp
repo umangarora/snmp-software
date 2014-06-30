@@ -14,6 +14,8 @@ namespace ourapi
 {
 
 struct args_container;
+struct duration_container;
+void createNew(vector<struct duration_container>& durationRecords,pqxx::result::const_iterator cur_it);
 
 class Executor
 {   
@@ -60,6 +62,23 @@ struct args_container{
     }
   }
 };
+
+struct duration_container{
+	int device_id;
+	string label,from,to;	
+	bool deauthFlag;
+};
+
+void createNew(vector<struct duration_container>& durationRecords,pqxx::result::const_iterator cur_it){
+	struct duration_container new_dur;
+	new_dur.device_id = cur_it[0].as<int>();
+	new_dur.label = cur_it[3].as<string>();
+	new_dur.from = cur_it[2].as<string>();
+	new_dur.to = "NA";
+	new_dur.deauthFlag = false;
+	durationRecords.push_back(new_dur);	
+}
+
 
 }  // namespace ourapi
 
