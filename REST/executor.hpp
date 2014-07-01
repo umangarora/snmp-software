@@ -16,6 +16,7 @@ namespace ourapi
 struct args_container;
 struct duration_container;
 void createNew(vector<struct duration_container>& durationRecords,pqxx::result::const_iterator cur_it);
+std::ostream &operator<<(std::ostream &os, duration_container const &obj);
 
 class Executor
 {   
