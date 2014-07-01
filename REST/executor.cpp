@@ -2,7 +2,7 @@
 #include <iostream>
 #include <vector>
 #include <sstream>
-
+#include <iterator>
 #include <stdint.h>
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/json_parser.hpp>
@@ -114,12 +114,11 @@ bool Executor::std(const args_container &args, outputType type, string & respons
 For Harkirat - duration function
 ************************************************
 */
-
-bool duration(pqxx::result res,vector<struct duration_container>& durationRecords) 
-{
+bool format_entries(pqxx::result & res, std::string & response){
+	bool ret=false;
 	pqxx::result::const_iterator cur_it = res.begin(), prev_it = cur_it;
 	int cur_traptype;
-	//vector<struct duration_container> durationRecords;
+	vector<struct duration_container> durationRecords;
 	if( cur_it!=res.end() ) {
 		createNew(durationRecords, cur_it);
 		cur_it++;
@@ -171,15 +170,12 @@ bool duration(pqxx::result res,vector<struct duration_container>& durationRecord
 	prev_it++;
 
 	} //while ends
-	return true;
+	std::stringstream ss;
+	std::copy(durationRecords.begin(), durationRecords.end(),std::ostream_iterator<struct duration_container>(ss,"\n"));
+	response = ss.str();
+	ret=true;
+	return ret;
 }
-
-
-bool format_entries(pqxx::result & res, std::string & response){
-  bool ret=false;
-  return ret;
-}
-
 /*
 *****************************
 Function to execute SQL query

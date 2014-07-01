@@ -78,7 +78,12 @@ void createNew(vector<struct duration_container>& durationRecords,pqxx::result::
 	new_dur.deauthFlag = false;
 	durationRecords.push_back(new_dur);	
 }
-
+std::ostream &operator<<(std::ostream &os, duration_container const &obj) { 
+    return os << obj.device_id << " "
+              << obj.label << " "
+              << obj.from << " "
+	      << obj.to << " ";
+}
 
 }  // namespace ourapi
 
