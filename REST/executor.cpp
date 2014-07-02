@@ -2,7 +2,6 @@
 #include <iostream>
 #include <vector>
 #include <sstream>
-#include <iterator>
 
 #include <stdint.h>
 #include <boost/property_tree/ptree.hpp>
@@ -88,6 +87,30 @@ bool write_last_std(pqxx::result & res, string & response){
   response = ss.str();
   return true;
 }
+
+bool write_last_duration_format(pqxx::result & res,vector<struct duration_container> & durationRecords, string & response){
+	pqxx::result::const_iterator iter = res.begin();
+	ptree root_t;
+	ptree children;
+  	root_t.put("size",durationRecords.size());
+	root_t.put("client_id",iter[1]);
+	for( std::vector<struct duration_container>::iterator i = durationRecords.begin(); i != durationRecords.end(); ++i)
+	{
+		struct duration_container ele = *i;
+		ptree child;
+	    	child.put("device_id",ele.device_id);
+	    	child.put("From Time",ele.from);
+	    	child.put("To Time",ele.to);
+	    	child.put("label",ele.label);
+	    	children.push_back(make_pair("",child));
+  	}
+  	root_t.add_child("log entries",children);
+	std::stringstream ss;
+  	write_json(ss,root_t);
+ 	response = ss.str();
+  	return true;
+}
+
 /*
 ************************************************
 Getting entries between two dates+times function
@@ -115,11 +138,10 @@ bool Executor::std(const args_container &args, outputType type, string & respons
 For Harkirat - duration function
 ************************************************
 */
-bool format_entries(pqxx::result & res, std::string & response){
-	bool ret=false;
+bool format_entries(pqxx::result & res,vector<struct duration_container> & durationRecords, std::string & response){
+	
 	pqxx::result::const_iterator cur_it = res.begin(), prev_it = cur_it;
 	int cur_traptype;
-	vector<struct duration_container> durationRecords;
 	if( cur_it!=res.end() ) {
 		createNew(durationRecords, cur_it);
 		cur_it++;
@@ -171,11 +193,8 @@ bool format_entries(pqxx::result & res, std::string & response){
 	prev_it++;
 
 	} //while ends
-	std::stringstream ss;
-	std::copy(durationRecords.begin(), durationRecords.end(),std::ostream_iterator<struct duration_container>(ss,"\n"));
-	response = ss.str();
-	ret=true;
-	return ret;
+	
+	return write_last_duration_format(res,durationRecords,response);
 }
 /*
 *****************************
@@ -191,12 +210,14 @@ bool Executor::generic_query(string & response, const string query,unsigned int 
     pqxx::work w(conn);
     pqxx::result res = w.exec(query);
     w.commit();
+    vector<struct duration_container> durationRecords;
     //TBD: Maybe some checking on pqxx::result itself
     if(type == VALID_API_MAC){
       return write_uid(res,response);
     }
     else if(type == VALID_API_LAST){
-      return write_last_std(res,response);
+      return format_entries(res,durationRecords,response);
+      //return write_last_std(res,response);
     }
     else if(type == VALID_API_STD){
       return write_last_std(res,response);
