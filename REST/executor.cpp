@@ -194,7 +194,7 @@ bool format_entries(pqxx::result & res,vector<struct duration_container> & durat
 
 	} //while ends
 	
-	return write_last_duration_format(res,durationRecords,response);
+	return true;
 }
 /*
 *****************************
@@ -216,7 +216,8 @@ bool Executor::generic_query(string & response, const string query,unsigned int 
       return write_uid(res,response);
     }
     else if(type == VALID_API_LAST){
-      return format_entries(res,durationRecords,response);
+      format_entries(res,durationRecords,response);
+      return write_last_duration_format(res,durationRecords,response);
       //return write_last_std(res,response);
     }
     else if(type == VALID_API_STD){
