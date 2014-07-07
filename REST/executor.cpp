@@ -124,29 +124,7 @@ bool Executor::live(const args_container &args, outputType type, string & respon
 }
 
 bool write_live(pqxx::result & res, string & response){
-ptree root_t;
-  root_t.put("uid",res[0][0]);
-  std::ostringstream oss;
-  write_json(oss,root_t);
-  response = oss.str();
-  return true;
 
-  ptree children;
-  root_t.put("size",res.size());
-  for(unsigned int rownum = 0 ;rownum < res.size(); rownum++){
-    ptree child;
-    child.put("device_id",res[rownum][0]);
-    child.put("client_id",res[rownum][1]);
-    child.put("ts",res[rownum][2]);
-    child.put("label",res[rownum][3]);
-    child.put("type",res[rownum][4]);
-    children.push_back(make_pair("",child));
-  }
-  root_t.add_child("log entries",children);
-  std::stringstream ss;
-  write_json(ss,root_t);
-  response = ss.str();
-  return true;
 }
 /*
 ************************************************
