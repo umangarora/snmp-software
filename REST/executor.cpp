@@ -109,17 +109,48 @@ bool Executor::std(const args_container &args, outputType type, string & respons
 }
 /*
 ************************************************
+Getting live connection details from live_table
+************************************************
+*/
+bool Executor::live(const args_container &args, outputType type, string & response, const string & url){
+	std::stringstream ss;
+	if(url == "/live"){
+		ss << "SELECT get_live_table()";
+		return Executor::generic_query(response,ss.str(),VALID_API_LIVE);
+	}
+	else{
+		return false;
+	}
+}
+
+bool write_live(pqxx::result & res, string & response){
+ptree root_t;
+  root_t.put("uid",res[0][0]);
+  std::ostringstream oss;
+  write_json(oss,root_t);
+  response = oss.str();
+  return true;
+
+  ptree children;
+  root_t.put("size",res.size());
+  for(unsigned int rownum = 0 ;rownum < res.size(); rownum++){
+    ptree child;
+    child.put("device_id",res[rownum][0]);
+    child.put("client_id",res[rownum][1]);
+    child.put("ts",res[rownum][2]);
+    child.put("label",res[rownum][3]);
+    child.put("type",res[rownum][4]);
+    children.push_back(make_pair("",child));
+  }
+  root_t.add_child("log entries",children);
+  std::stringstream ss;
+  write_json(ss,root_t);
+  response = ss.str();
+  return true;
+}
+/*
+************************************************
 For Harkirat - duration function
----
-Comment on 3rd July 2014: @Harkirat - wherever there is a cout,
-make a child and add it to the ptree
-Email me once you are done.
-Issue a pull request after testing.
-(Remember only one pull request is allowed per branch so rember, to do it in
-a sperate branch.)
-Extra note: I would advise you to create an inline function with make a node with the connected to, from and to information and returns a reference to the child ptree.
-Comment End
----
 ************************************************
 */
 inline ptree make_node(int device, string from, string to){
@@ -196,6 +227,9 @@ bool Executor::generic_query(string & response, const string query,unsigned int 
     }
     else if(type == VALID_API_STD){
       return write_last_std(res,response); // This will be replaced by format_entries()
+    }
+    else if(type == VALID_API_LIVE){
+      return write_live(res,response);		
     }
   }
   catch(const std::exception & e){

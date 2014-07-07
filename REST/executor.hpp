@@ -25,6 +25,7 @@ public:
 	bool uid(const args_container & args, outputType type,  string& response);
   bool last(const args_container & args, outputType type,  string& response,const string & url);
   bool std(const args_container & args, outputType type,  string & response,const string & url);
+  bool live(const args_container & args, outputType type, string & response,const string & url);
 private:
 	bool generic_query(const vector<string>& args, outputType type,  string& response,string query,int t);
   bool generic_query(string & response, string query,unsigned int type);
@@ -39,6 +40,7 @@ private:
 #define VALID_API_STD 15  // Valid API "standard" - come up with better names
 #define VALID_API_LAST 17 // Valid "last" n connections api
 #define VALID_API_MAC 32 // Valid API to get the uid form the MAC
+#define VALID_API_LIVE 0 // Valid API to get live connections
 
 
 struct args_container{
@@ -57,6 +59,9 @@ struct args_container{
     }
     else if(type == VALID_API_MAC){
       StrUtil::eraseWhiteSpace(mac);
+    }
+    else if(type == VALID_API_LIVE){
+	// do nothing
     }
   }
 };

@@ -75,6 +75,7 @@ unsigned int fill_args(const map<string,string> & args, struct args_container & 
     }
     it++;
   }
+std::cout<<"sum is : "<<result<<std::endl;
   params.type = result;
   return result;
 }
@@ -83,13 +84,13 @@ bool api::executeAPI(const string& url, const map<string, string>& argvals, stri
   // Ignore all the args except the "fields" param 
   Executor::outputType type = Executor::TYPE_JSON;
   args_container params;
-  
+  std::cout<<"url is :"<<url<<std::endl;
   // **Later check for duplicate url_arguments**
 
 	//Old comment -  Unique params will come handy when, in future we allow for multiple MACs to be sent at once.
 	string prms;
   unsigned int api_type = fill_args(argvals,params);
-  if(api_type!= VALID_API_STD and api_type != VALID_API_LAST and api_type != VALID_API_MAC){
+  if(api_type!= VALID_API_STD and api_type != VALID_API_LAST and api_type != VALID_API_MAC and api_type !=VALID_API_LIVE){
     response = "Invalid API call";
     return false;
   }
@@ -117,6 +118,9 @@ bool api::_executeAPI(const string& url, const struct args_container & argvals,
   }
   else if(argvals.type == VALID_API_STD){
     ret = _executor.std(argvals,type,response,url); // 'std' is used to refer to the standrd from date to to date api
+  }
+  else if(argvals.type == VALID_API_LIVE){
+    ret = _executor.live(argvals,type,response,url);
   }
   return ret;
 }
