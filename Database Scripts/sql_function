@@ -316,3 +316,11 @@ CREATE OR REPLACE FUNCTION function_live_logs() RETURNS TRIGGER AS $trigger_live
 $trigger_live_logs$ LANGUAGE plpgsql;
 
 CREATE TRIGGER trigger_live_logs AFTER INSERT ON logs FOR EACH ROW EXECUTE PROCEDURE function_live_logs();
+
+CREATE OR REPLACE FUNCTION get_live_ip() RETURNS TABLE (c_id int, d_id int, tstamp timestamp, ip text) AS $$
+	BEGIN
+		RETURN QUERY SELECT client_id, device_id, ts, uid.ip
+		FROM live_table INNER JOIN uid 
+		ON (live_table.client_id=uid.uid);
+	END
+$$ LANGUAGE plpgsql;
