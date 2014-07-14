@@ -321,6 +321,7 @@ CREATE OR REPLACE FUNCTION get_live_ip() RETURNS TABLE (c_id int, d_id int, tsta
 	BEGIN
 		RETURN QUERY SELECT client_id, device_id, ts, uid.ip
 		FROM live_table INNER JOIN uid 
-		ON (live_table.client_id=uid.uid);
+		ON (live_table.client_id=uid.uid)
+		where uid.ip IS NOT NULL;
 	END
 $$ LANGUAGE plpgsql;

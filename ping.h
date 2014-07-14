@@ -82,11 +82,12 @@ int ping(string target)
 		return -1;
 	}
 */
-	if ( (s = socket(AF_INET, SOCK_RAW, IPPROTO_ICMP)) < 0)
-	{
-		perror("socket");	/* probably not running as superuser */
-		return -1;
-	}
+s = socket(AF_INET, SOCK_RAW, IPPROTO_ICMP);
+//	if ( (s = socket(AF_INET, SOCK_RAW, IPPROTO_ICMP)) < 0)
+//	{
+//		perror("socket");	/* probably not running as superuser */
+//		return -1;
+//	}
 
 	icp = (struct icmp *)outpack;
 	icp->icmp_type = ICMP_ECHO;
@@ -146,22 +147,22 @@ int ping(string target)
 			icp = (struct icmp *)(packet + hlen); 
 			if (icp->icmp_type == ICMP_ECHOREPLY)
 			{
-				//cout << "Recv: echo reply"<< endl;
+				cout << "Recv: echo reply"<< endl;
 				if (icp->icmp_seq != 12345)
 				{
-					//cout << "received sequence # " << icp->icmp_seq << endl;
+					cout << "received sequence # " << icp->icmp_seq << endl;
 					continue;
 				}
 				if (icp->icmp_id != getpid())
 				{
-					//cout << "received id " << icp->icmp_id << endl;
+					cout << "received id " << icp->icmp_id << endl;
 					continue;
 				}
 				cont = false;
 			}
 			else
 			{
-				//cout << "Recv: not an echo reply" << endl;
+				cout << "Recv: not an echo reply" << endl;
 				continue;
 			}
 	
@@ -171,12 +172,12 @@ int ping(string target)
 			if(end_t < 1)
 				end_t = 1;
 
-			//cout << "Elapsed time = " << end_t << " usec" << endl;
+			cout << "Elapsed time = " << end_t << " usec" << endl;
 			return end_t;
 		}
 		else
 		{
-			//cout << "No data within one seconds.\n";
+			cout << "No data within one seconds.\n";
 			return 0;
 		}
 	}
