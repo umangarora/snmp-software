@@ -25,7 +25,6 @@ int main(int argc, char** argv)
 				for(unsigned int rownum = 0 ;rownum < res.size(); rownum++){
 					std::string ip_addr = res[rownum][3].as<std::string>();
 					int ping_recv = ping(ip_addr);
-					std::cout<<ping_recv<<endl;
 					if(ping_recv==0)
 					{
 						work W2(C);
