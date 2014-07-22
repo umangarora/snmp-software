@@ -87,9 +87,9 @@ BEGIN
       prev_row := row2;
     END IF;
 
-    IF row2.type = 1 and prev_row.type = 2 THEN
+    IF row2.type = 1 and (prev_row.type = 2 OR prev_row.type = 4) THEN
       prev_row := row2;
-    ELSIF row2.type = 2 and prev_row.type = 1 THEN
+    ELSIF (row2.type = 2 OR row2.type = 4 )and prev_row.type = 1 THEN
       INSERT INTO tmptable(device_id,client_id,fro,tro)
       VALUES (id,prev_row.client_id,prev_row.ts,row2.ts);
       flag := 0;
@@ -142,9 +142,9 @@ BEGIN
       prev_row := row2;
     END IF;
 
-    IF row2.type = 1 and prev_row.type = 2 THEN
+    IF row2.type = 1 and (prev_row.type = 2 OR prev_row.type = 4) THEN
       prev_row := row2;
-    ELSIF row2.type = 2 and prev_row.type = 1 THEN
+    ELSIF (row2.type = 2 OR prev_row.type = 4) and prev_row.type = 1 THEN
       INSERT INTO tmptable(device_id,client_id,fro,tro)
       VALUES (id,prev_row.client_id,prev_row.ts,row2.ts);
       flag := 0;
@@ -262,7 +262,7 @@ BEGIN
         (prev_row.device_id,id,prev_row.ts,row2.ts);
         prev_row := row2;
       END IF;
-    ELSIF row2.type = 2 THEN
+    ELSIF row2.type = 2 OR row2.type = 4 THEN
       IF row2.device_id = prev_row.device_id THEN
         INSERT INTO tmptable(device_id,client_id,fro,tro) VALUES
         (prev_row.device_id,id,prev_row.ts,row2.ts);
@@ -279,9 +279,9 @@ END
 $$
 LANGUAGE 'plpgsql';
 
-CREATE OR REPLACE FUNCTION get_live_table() RETURNS TABLE (c_id int, d_id int, tstamp timestamp) AS $$
+CREATE OR REPLACE FUNCTION get_live_table() RETURNS TABLE (c_id int, d_id int, tstamp timestamp,_label text) AS $$
 	BEGIN
-		RETURN QUERY SELECT client_id, device_id, ts 
+		RETURN QUERY SELECT client_id, device_id, ts,label
 		FROM live_table LEFT OUTER JOIN uid 
 		ON (live_table.client_id=uid.uid)
 		where uid.access >=1;
@@ -297,11 +297,11 @@ CREATE OR REPLACE FUNCTION function_live_logs() RETURNS TRIGGER AS $trigger_live
 			FOR res IN SELECT * FROM live_table where live_table.client_id = NEW.client_id LOOP
 				foundFlag :=1;
 				IF (NEW.device_id != res.device_id ) THEN
-					UPDATE live_table SET device_id = NEW.device_id,ts = NEW.ts where client_id = NEW.client_id;
+					UPDATE live_table SET device_id = NEW.device_id,ts = NEW.ts, label = NEW.label where client_id = NEW.client_id;
 					END IF;
 			END LOOP;
 			IF (foundFlag =0) THEN
-				INSERT INTO live_table VALUES(NEW.client_id, NEW.device_id, NEW.ts);
+				INSERT INTO live_table VALUES(NEW.client_id, NEW.device_id, NEW.ts, NEW.label);
 			END IF;
 		END IF;
 		IF (NEW.type =2) THEN
@@ -316,6 +316,14 @@ CREATE OR REPLACE FUNCTION function_live_logs() RETURNS TRIGGER AS $trigger_live
 $trigger_live_logs$ LANGUAGE plpgsql;
 
 CREATE TRIGGER trigger_live_logs AFTER INSERT ON logs FOR EACH ROW EXECUTE PROCEDURE function_live_logs();
+CREATE TRIGGER trigger_type_4 AFTER DELETE ON live_table FOR EACH ROW EXECUTE PROCEDURE ins_type_4();
+
+CREATE OR REPLACE FUNCTION ins_type_4() RETURNS TRIGGER AS $trigger_type_4$
+	BEGIN
+		INSERT INTO logs(device_id, ts, label, type, client_id) VALUES(OLD.device_id, now(), OLD.label, 4, OLD.client_id);
+		RETURN NULL;
+	END;
+$trigger_type_4$ LANGUAGE plpgsql;
 
 CREATE OR REPLACE FUNCTION get_live_ip() RETURNS TABLE (c_id int, d_id int, tstamp timestamp, ip text) AS $$
 	BEGIN
