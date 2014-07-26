@@ -31,10 +31,10 @@ uint16_t in_cksum(uint16_t *addr, unsigned len);
 
 int ping(string target)
 {
-
         int s, i, cc, packlen, datalen = DEFDATALEN;
 	struct hostent *hp;
 	struct sockaddr_in to, from;
+	struct addrinfo hints, *res;
 	//struct protoent	*proto;
 	struct ip *ip;
 	u_char *packet, outpack[MAXPACKET];
@@ -68,6 +68,14 @@ int ping(string target)
 		strncpy(hnamebuf, hp->h_name, sizeof(hnamebuf) - 1);
 		hostname = hnamebuf;
 	}
+	
+	memset(&hints, 0, sizeof hints);
+	hints.ai_family = AF_INET;
+	if( (getaddrinfo(hostname.c_str(), NULL, &hints, &res)) !=0 )
+	{
+		return -1;	
+	}	
+	
 	packlen = datalen + MAXIPLEN + MAXICMPLEN;
 	if ( (packet = (u_char *)malloc((u_int)packlen)) == NULL)
 	{
@@ -86,6 +94,12 @@ int ping(string target)
 	{
 		perror("socket");	/* probably not running as superuser */
 		return -1;
+	}
+	
+	if( (connect(s,(struct sockaddr *) & to, res->ai_addrlen)) < 0)
+	{
+		cerr<<"unable to connect";	
+		return -1;	
 	}
 
 	icp = (struct icmp *)outpack;
@@ -133,6 +147,7 @@ int ping(string target)
 				return -1;
 			}
 
+			//cout<<"recv came from"<<inet_ntoa(from.sin_addr)<<endl;
 			// Check the IP header
 			ip = (struct ip *)((char*)packet); 
 			hlen = sizeof( struct ip ); 
@@ -146,22 +161,18 @@ int ping(string target)
 			icp = (struct icmp *)(packet + hlen); 
 			if (icp->icmp_type == ICMP_ECHOREPLY)
 			{
-				//cout << "Recv: echo reply"<< endl;
 				if (icp->icmp_seq != 12345)
 				{
-					//cout << "received sequence # " << icp->icmp_seq << endl;
 					continue;
 				}
 				if (icp->icmp_id != getpid())
 				{
-					//cout << "received id " << icp->icmp_id << endl;
 					continue;
 				}
 				cont = false;
 			}
 			else
 			{
-				//cout << "Recv: not an echo reply" << endl;
 				continue;
 			}
 	
@@ -171,12 +182,10 @@ int ping(string target)
 			if(end_t < 1)
 				end_t = 1;
 
-			//cout << "Elapsed time = " << end_t << " usec" << endl;
 			return end_t;
 		}
 		else
 		{
-			//cout << "No data within one seconds.\n";
 			return 0;
 		}
 	}

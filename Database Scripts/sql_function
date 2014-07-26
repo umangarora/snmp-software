@@ -316,18 +316,20 @@ CREATE OR REPLACE FUNCTION function_live_logs() RETURNS TRIGGER AS $trigger_live
 $trigger_live_logs$ LANGUAGE plpgsql;
 
 CREATE TRIGGER trigger_live_logs AFTER INSERT ON logs FOR EACH ROW EXECUTE PROCEDURE function_live_logs();
-CREATE TRIGGER trigger_type_4 AFTER DELETE ON live_table FOR EACH ROW EXECUTE PROCEDURE ins_type_4();
+CREATE TRIGGER trigger_type_4 AFTER INSERT ON logs FOR EACH ROW EXECUTE PROCEDURE del_dead_conn();
 
-CREATE OR REPLACE FUNCTION ins_type_4() RETURNS TRIGGER AS $trigger_type_4$
+CREATE OR REPLACE FUNCTION del_dead_conn() RETURNS TRIGGER AS $trigger_type_4$
 	BEGIN
-		INSERT INTO logs(device_id, ts, label, type, client_id) VALUES(OLD.device_id, now(), OLD.label, 4, OLD.client_id);
+		IF (NEW.type =4) THEN
+			DELETE FROM live_table WHERE client_id = NEW.client_id;
+		END IF;
 		RETURN NULL;
 	END;
 $trigger_type_4$ LANGUAGE plpgsql;
 
-CREATE OR REPLACE FUNCTION get_live_ip() RETURNS TABLE (c_id int, d_id int, tstamp timestamp, ip text) AS $$
+CREATE OR REPLACE FUNCTION get_live_ip() RETURNS TABLE (c_id int, d_id int, tstamp timestamp, ip text, _label text) AS $$
 	BEGIN
-		RETURN QUERY SELECT client_id, device_id, ts, uid.ip
+		RETURN QUERY SELECT client_id, device_id, ts, uid.ip, label
 		FROM live_table INNER JOIN uid 
 		ON (live_table.client_id=uid.uid)
 		where uid.ip IS NOT NULL;
