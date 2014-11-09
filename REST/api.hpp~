@@ -24,7 +24,7 @@ public:
 private:
     Executor _executor;
     bool _validate(const void*  data);
-    bool _executeAPI(const string& url, const struct args_container & args, Executor::outputType type, string& response,bool & is_sudo,  char* ipAddress);
+    bool _executeAPI(const string& url, const struct args_container & args, Executor::outputType type, string& response,bool & is_sudo);
     void _getInvalidResponse(string& response);
     map<string, set<string> > _apiparams;
 

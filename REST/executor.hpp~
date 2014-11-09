@@ -32,7 +32,7 @@ public:
   bool su_put(const args_container &args, outputType type, string & response,const string & url);
   bool attendance(const args_container &args, outputType type, string & response,const string & url);
   bool attendance_all(const args_container &args, outputType type, string & response,const string & url);	
-  bool loc_register(const args_container &args, outputType type, string & response,const string & url, char* ipAddress);
+  bool loc_register(const args_container &args, outputType type, string & response,const string & url);
   bool loc_deregister(const args_container &args, outputType type, string & response,const string & url, char* ipAddress);
   void set_type(unsigned int q) {query_type = q;};
   unsigned int get_type() {return query_type;};

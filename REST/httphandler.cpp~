@@ -164,10 +164,10 @@ inet_ntop(AF_INET, &(sObj->sin_addr), ipAddress, INET_ADDRSTRLEN);
 //std::cout<<ipAddress;
 
   bool is_sudo = false;
-  if(callapi.authenticateAPI(url, url_args, respdata_auth, is_sudo, ipAddress) == false){
+  if(callapi.authenticateAPI(url, url_args, respdata_auth, is_sudo,ipAddress) == false){
       return send_bad_response(connection, respdata_auth);
   }
-  if(callapi.executeAPI(url, url_args, respdata, is_sudo, ipAddress) == false){
+  if(callapi.executeAPI(url, url_args, respdata, is_sudo) == false){
     return send_bad_response(connection, respdata);
   }
   *ptr = 0;                  /* reset when done */

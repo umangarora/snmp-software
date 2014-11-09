@@ -358,7 +358,7 @@ bool Executor::loc_deregister(const args_container &args, outputType type, strin
     
     const char* uid = res[0][0].c_str();
   std::stringstream ss;
-  ss<< "DELETE FROM location_service WHERE uid = " << uid << ";";
+  ss<< "DELETE FROM location_service WHERE uid = " << args.uid << ";";
   return Executor::generic_query(response,ss.str());  
   }
   catch(const std::exception & e){

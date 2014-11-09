@@ -236,10 +236,10 @@ bool api::_executeAPI(const string& url, const struct args_container & argvals,
     ret = _executor.attendance_all(argvals,type,response,url);
   }
   else if(_executor.get_type() == VALID_API_REGISTER){
-    ret = _executor.loc_register(argvals,type,response,url, ipAddress);
+    ret = _executor.loc_register(argvals,type,response,url);
   }
   else if(_executor.get_type() == VALID_API_DEREGISTER){
-    ret = _executor.loc_deregister(argvals,type,response,url, ipAddress);
+    ret = _executor.loc_deregister(argvals,type,response,url);
   }
   return ret;
 }
